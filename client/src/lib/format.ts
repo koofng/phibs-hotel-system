@@ -3,6 +3,13 @@ export function formatMoney(value: string | number): string {
   return n.toLocaleString("en-NG", { style: "currency", currency: "NGN" });
 }
 
+// Room charge line items store the nightly rate as the amount and the number of
+// nights as the quantity, e.g. "Room charge (65,000) * 8".
+export function formatRoomChargeLabel(rate: string | number, nights: number): string {
+  const n = typeof rate === "string" ? Number(rate) : rate;
+  return `Room charge (${n.toLocaleString("en-NG", { maximumFractionDigits: 2 })}) * ${nights}`;
+}
+
 export function formatDateTime(value: string | Date): string {
   const d = typeof value === "string" ? new Date(value) : value;
   return d.toLocaleString(undefined, {

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { getPaymentReceipt } from "../api/billing";
-import { formatDateTime, formatMoney, formatStayDate } from "../lib/format";
+import { formatDateTime, formatMoney, formatRoomChargeLabel, formatStayDate } from "../lib/format";
 import { HOTEL } from "../lib/hotel";
 import { downloadReceiptPdf } from "../lib/receiptPdf";
 
@@ -79,8 +79,14 @@ export function ReceiptPage() {
             {lineItems.map((li) => (
               <tr key={li.id}>
                 <td className="py-1.5 text-slate-900">
-                  {li.description}
-                  {li.quantity > 1 && <span className="text-slate-400"> × {li.quantity}</span>}
+                  {li.type === "ROOM_CHARGE" ? (
+                    formatRoomChargeLabel(li.amount, li.quantity)
+                  ) : (
+                    <>
+                      {li.description}
+                      {li.quantity > 1 && <span className="text-slate-400"> × {li.quantity}</span>}
+                    </>
+                  )}
                 </td>
                 <td className="py-1.5 pl-4 text-right whitespace-nowrap text-slate-900">
                   {li.type === "DISCOUNT" ? "−" : ""}

@@ -1,5 +1,5 @@
 import type { PaymentReceipt } from "../types";
-import { formatDateTime, formatStayDate } from "./format";
+import { formatDateTime, formatRoomChargeLabel, formatStayDate } from "./format";
 import { HOTEL } from "./hotel";
 
 // jsPDF's built-in fonts have no glyph for ₦, so the PDF spells out the ISO code.
@@ -90,7 +90,12 @@ export async function downloadReceiptPdf({ receiptNumber, payment, summary }: Pa
   y += 20;
   doc.setFontSize(10);
   for (const li of lineItems) {
-    const label = li.quantity > 1 ? `${li.description} x ${li.quantity}` : li.description;
+    const label =
+      li.type === "ROOM_CHARGE"
+        ? formatRoomChargeLabel(li.amount, li.quantity)
+        : li.quantity > 1
+          ? `${li.description} x ${li.quantity}`
+          : li.description;
     const amount = Number(li.amount) * li.quantity;
     row(label, pdfMoney(li.type === "DISCOUNT" ? -amount : amount));
   }
