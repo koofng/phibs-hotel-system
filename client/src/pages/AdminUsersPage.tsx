@@ -40,14 +40,14 @@ export function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Staff Accounts</h1>
           <p className="text-sm text-slate-500">Manage admin and front-desk users.</p>
         </div>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800"
+          className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 sm:py-1.5"
         >
           {showForm ? "Cancel" : "New staff account"}
         </button>
@@ -72,8 +72,8 @@ export function AdminUsersPage() {
       )}
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <table className="w-full min-w-[600px] text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
             <tr>
               <th className="px-4 py-2">Name</th>
@@ -94,10 +94,10 @@ export function AdminUsersPage() {
                     {u.isActive ? "Active" : "Inactive"}
                   </span>
                 </td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-2 text-right">
                   <button
                     onClick={() => toggleActiveMutation.mutate({ id: u.id, isActive: !u.isActive })}
-                    className="text-xs font-medium text-slate-600 underline hover:text-slate-900"
+                    className="py-1 text-xs font-medium whitespace-nowrap text-slate-600 underline hover:text-slate-900"
                   >
                     {u.isActive ? "Deactivate" : "Reactivate"}
                   </button>

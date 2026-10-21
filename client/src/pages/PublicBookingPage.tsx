@@ -63,7 +63,7 @@ export function PublicBookingPage() {
       </div>
 
       <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
           <div>
             <label className="mb-1 block text-xs font-medium text-slate-600">Check-in</label>
             <input
@@ -74,7 +74,7 @@ export function PublicBookingPage() {
                 setSearched(false);
                 setSelectedRoom(null);
               }}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm sm:w-auto"
             />
           </div>
           <div>
@@ -87,12 +87,12 @@ export function PublicBookingPage() {
                 setSearched(false);
                 setSelectedRoom(null);
               }}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm sm:w-auto"
             />
           </div>
           <button
             onClick={() => setSearched(true)}
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+            className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 sm:w-auto"
           >
             Check availability
           </button>

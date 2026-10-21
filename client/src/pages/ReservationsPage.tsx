@@ -82,7 +82,7 @@ export function ReservationsPage() {
 
       <section className="rounded-lg border border-slate-200 bg-white p-4">
         <h2 className="mb-3 text-lg font-medium text-slate-900">New reservation</h2>
-        <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
           <div>
             <label className="mb-1 block text-xs font-medium text-slate-600">Check-in</label>
             <input
@@ -93,7 +93,7 @@ export function ReservationsPage() {
                 setSearched(false);
                 setSelectedRoom(null);
               }}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm sm:w-auto"
             />
           </div>
           <div>
@@ -106,12 +106,12 @@ export function ReservationsPage() {
                 setSearched(false);
                 setSelectedRoom(null);
               }}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm sm:w-auto"
             />
           </div>
           <button
             onClick={() => setSearched(true)}
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+            className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 sm:w-auto"
           >
             Search availability
           </button>
@@ -147,8 +147,8 @@ export function ReservationsPage() {
             <p className="text-sm font-medium text-slate-700">
               Booking Room {selectedRoom.roomNumber} ({selectedRoom.roomType.name})
             </p>
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="flex-1 min-w-[200px]">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+              <div className="min-w-0 flex-1 sm:min-w-[200px]">
                 <div className="mb-2 flex items-center gap-1 text-xs">
                   {(["existing", "new"] as const).map((mode) => (
                     <button
@@ -232,7 +232,7 @@ export function ReservationsPage() {
                   min={1}
                   value={numGuests}
                   onChange={(e) => setNumGuests(Number(e.target.value))}
-                  className="w-24 rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm sm:w-24"
                 />
               </div>
               <button
@@ -241,7 +241,7 @@ export function ReservationsPage() {
                   setError(null);
                   createMutation.mutate();
                 }}
-                className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+                className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50 sm:w-auto"
               >
                 {createMutation.isPending ? "Booking…" : "Confirm booking"}
               </button>
@@ -253,7 +253,26 @@ export function ReservationsPage() {
 
       <section>
         <h2 className="mb-3 text-lg font-medium text-slate-900">All reservations</h2>
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <ul className="divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200 bg-white md:hidden">
+          {reservationsQuery.data?.map((r) => (
+            <li key={r.id}>
+              <button
+                onClick={() => navigate(`/reservations/${r.id}`)}
+                className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left text-sm hover:bg-slate-50"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-slate-900">{r.guest.fullName}</p>
+                  <p className="text-slate-500">Room {r.room?.roomNumber ?? "Unassigned"}</p>
+                  <p className="text-slate-500">
+                    {formatStayDate(r.checkInDate)} → {formatStayDate(r.checkOutDate)}
+                  </p>
+                </div>
+                <StatusBadge status={r.status} />
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="hidden overflow-x-auto rounded-lg border border-slate-200 bg-white md:block">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
               <tr>

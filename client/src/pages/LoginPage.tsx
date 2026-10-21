@@ -34,8 +34,8 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8">
+      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <h1 className="mb-1 text-xl font-semibold text-slate-900">🏨 Hotel Admin</h1>
         <p className="mb-6 text-sm text-slate-500">Sign in to manage the property.</p>
 
@@ -71,11 +71,11 @@ export function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 rounded-md bg-slate-50 p-3 text-xs text-slate-500">
+        {/* <div className="mt-6 rounded-md bg-slate-50 p-3 text-xs text-slate-500">
           <p className="mb-1 font-medium text-slate-600">Demo accounts</p>
           <p>admin@hotel.local / admin123</p>
           <p>frontdesk@hotel.local / staff123</p>
-        </div>
+        </div> */}
 
         <p className="mt-4 text-center text-sm text-slate-500">
           Booking a stay?{" "}

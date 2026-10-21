@@ -86,7 +86,7 @@ export function InventoryPage() {
       </div>
 
       <section>
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="text-lg font-medium text-slate-900">Room Types</h2>
           {isAdmin && (
             <button
@@ -114,8 +114,8 @@ export function InventoryPage() {
           </form>
         )}
 
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+          <table className="w-full min-w-[560px] text-sm">
             <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
               <tr>
                 <th className="px-4 py-2">Name</th>
@@ -139,7 +139,7 @@ export function InventoryPage() {
       </section>
 
       <section>
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="text-lg font-medium text-slate-900">Rooms</h2>
           {isAdmin && (
             <button
@@ -174,8 +174,8 @@ export function InventoryPage() {
 
         {formError && <p className="mb-3 text-sm text-red-600">{formError}</p>}
 
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+          <table className="w-full min-w-[560px] text-sm">
             <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
               <tr>
                 <th className="px-4 py-2">Room</th>
@@ -198,7 +198,7 @@ export function InventoryPage() {
                         onChange={(e) =>
                           housekeepingMutation.mutate({ id: room.id, status: e.target.value as HousekeepingStatus })
                         }
-                        className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                        className="rounded-md border border-slate-300 px-2 py-1.5 text-xs"
                       >
                         {housekeepingOptions.map((s) => (
                           <option key={s} value={s}>

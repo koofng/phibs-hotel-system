@@ -112,10 +112,10 @@ export function ReservationDetailPage() {
         ← Back to reservations
       </button>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-5">
-        <div className="mb-4 flex items-start justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-slate-900">{reservation.guest.fullName}</h1>
+      <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-xl font-semibold break-words text-slate-900">{reservation.guest.fullName}</h1>
             <p className="text-sm text-slate-500">
               Room {reservation.room?.roomNumber ?? "Unassigned"} · {reservation.room?.roomType.name}
             </p>
@@ -165,63 +165,65 @@ export function ReservationDetailPage() {
       </div>
 
       {folio && (
-        <div className="rounded-lg border border-slate-200 bg-white p-5">
+        <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-lg font-medium text-slate-900">Folio</h2>
             <StatusBadge status={folio.status} />
           </div>
 
-          <table className="mb-4 w-full text-sm">
-            <thead className="text-left text-xs uppercase text-slate-500">
-              <tr>
-                <th className="py-1">Description</th>
-                <th className="py-1">Type</th>
-                <th className="py-1">Qty</th>
-                <th className="py-1">Amount</th>
-                <th className="py-1"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {folio.lineItems.map((item) => (
-                <tr key={item.id}>
-                  <td className="py-1.5">{item.description}</td>
-                  <td className="py-1.5 text-slate-500">{item.type}</td>
-                  <td className="py-1.5">{item.quantity}</td>
-                  <td className="py-1.5">{formatMoney(item.amount)}</td>
+          <div className="mb-4 overflow-x-auto">
+            <table className="w-full min-w-[420px] text-sm">
+              <thead className="text-left text-xs uppercase text-slate-500">
+                <tr>
+                  <th className="py-1">Description</th>
+                  <th className="py-1">Type</th>
+                  <th className="py-1">Qty</th>
+                  <th className="py-1">Amount</th>
+                  <th className="py-1"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {folio.lineItems.map((item) => (
+                  <tr key={item.id}>
+                    <td className="py-1.5 pr-2">{item.description}</td>
+                    <td className="py-1.5 pr-2 text-slate-500">{item.type}</td>
+                    <td className="py-1.5 pr-2">{item.quantity}</td>
+                    <td className="py-1.5 whitespace-nowrap">{formatMoney(item.amount)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-          <dl className="mb-4 ml-auto max-w-xs space-y-1 text-sm">
-            <div className="flex justify-between">
+          <dl className="mb-4 space-y-1 text-sm sm:ml-auto sm:max-w-xs">
+            <div className="flex justify-between gap-4">
               <dt className="text-slate-500">Subtotal</dt>
-              <dd className="text-slate-900">{formatMoney(folio.totals.subtotal)}</dd>
+              <dd className="text-right text-slate-900">{formatMoney(folio.totals.subtotal)}</dd>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between gap-4">
               <dt className="text-slate-500">Tax ({folio.totals.taxRate * 100}%)</dt>
-              <dd className="text-slate-900">{formatMoney(folio.totals.taxTotal)}</dd>
+              <dd className="text-right text-slate-900">{formatMoney(folio.totals.taxTotal)}</dd>
             </div>
-            <div className="flex justify-between border-t border-slate-200 pt-1 font-semibold">
+            <div className="flex justify-between gap-4 border-t border-slate-200 pt-1 font-semibold">
               <dt className="text-slate-900">Total</dt>
-              <dd className="text-slate-900">{formatMoney(folio.totals.total)}</dd>
+              <dd className="text-right text-slate-900">{formatMoney(folio.totals.total)}</dd>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between gap-4">
               <dt className="text-slate-500">Paid</dt>
-              <dd className="text-slate-900">{formatMoney(folio.totals.amountPaid)}</dd>
+              <dd className="text-right text-slate-900">{formatMoney(folio.totals.amountPaid)}</dd>
             </div>
-            <div className="flex justify-between font-semibold">
+            <div className="flex justify-between gap-4 font-semibold">
               <dt className="text-slate-900">Balance due</dt>
-              <dd className={balanceDue > 0 ? "text-red-600" : "text-green-600"}>{formatMoney(balanceDue)}</dd>
+              <dd className={`text-right ${balanceDue > 0 ? "text-red-600" : "text-green-600"}`}>{formatMoney(balanceDue)}</dd>
             </div>
           </dl>
 
           {folio.status === "OPEN" && (
             <form
               onSubmit={lineItemForm.handleSubmit((v) => addLineItemMutation.mutate(v))}
-              className="mb-4 flex flex-wrap items-end gap-2 rounded-md bg-slate-50 p-3"
+              className="mb-4 grid grid-cols-2 gap-2 rounded-md bg-slate-50 p-3 sm:flex sm:flex-wrap sm:items-end"
             >
-              <select {...lineItemForm.register("type")} className="rounded-md border border-slate-300 px-2 py-1.5 text-sm">
+              <select {...lineItemForm.register("type")} className="col-span-2 rounded-md border border-slate-300 px-2 py-1.5 text-sm sm:col-span-1">
                 <option value="SERVICE">Service</option>
                 <option value="ROOM_CHARGE">Room charge</option>
                 <option value="TAX">Tax</option>
@@ -230,49 +232,51 @@ export function ReservationDetailPage() {
               <input
                 placeholder="Description"
                 {...lineItemForm.register("description")}
-                className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                className="col-span-2 min-w-0 rounded-md border border-slate-300 px-2 py-1.5 text-sm sm:col-span-1"
               />
               <input
                 placeholder="Amount"
                 type="number"
                 step="0.01"
                 {...lineItemForm.register("amount")}
-                className="w-24 rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                className="min-w-0 rounded-md border border-slate-300 px-2 py-1.5 text-sm sm:w-24"
               />
               <input
                 placeholder="Qty"
                 type="number"
                 {...lineItemForm.register("quantity")}
-                className="w-16 rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+                className="min-w-0 rounded-md border border-slate-300 px-2 py-1.5 text-sm sm:w-16"
               />
-              <button type="submit" className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white">
+              <button type="submit" className="col-span-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white sm:col-span-1 sm:py-1.5">
                 Add charge
               </button>
             </form>
           )}
 
           <h3 className="mb-2 text-sm font-semibold text-slate-700">Payments</h3>
-          <table className="mb-4 w-full text-sm">
-            <tbody className="divide-y divide-slate-100">
-              {folio.payments.map((p) => (
-                <tr key={p.id}>
-                  <td className="py-1.5">{formatMoney(p.amount)}</td>
-                  <td className="py-1.5 text-slate-500">{p.method}</td>
-                  <td className="py-1.5 text-slate-400">{formatDate(p.paidAt)}</td>
-                  <td className="py-1.5 text-right">
-                    <Link to={`/payments/${p.id}/receipt`} className="text-slate-700 hover:underline">
-                      Receipt
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-              {folio.payments.length === 0 && (
-                <tr>
-                  <td className="py-1.5 text-slate-400">No payments recorded.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          <div className="mb-4 overflow-x-auto">
+            <table className="w-full text-sm">
+              <tbody className="divide-y divide-slate-100">
+                {folio.payments.map((p) => (
+                  <tr key={p.id}>
+                    <td className="py-1.5 pr-2 whitespace-nowrap">{formatMoney(p.amount)}</td>
+                    <td className="py-1.5 pr-2 text-slate-500">{p.method}</td>
+                    <td className="py-1.5 pr-2 whitespace-nowrap text-slate-400">{formatDate(p.paidAt)}</td>
+                    <td className="py-1.5 text-right">
+                      <Link to={`/payments/${p.id}/receipt`} className="text-slate-700 hover:underline">
+                        Receipt
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+                {folio.payments.length === 0 && (
+                  <tr>
+                    <td className="py-1.5 text-slate-400">No payments recorded.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
           {folio.status === "OPEN" && balanceDue > 0 && (
             <form
@@ -283,7 +287,7 @@ export function ReservationDetailPage() {
                 <p className="text-xs text-slate-500">Amount</p>
                 <p className="text-sm font-semibold text-slate-900">{formatMoney(balanceDue)}</p>
               </div>
-              <select {...paymentForm.register("method")} className="rounded-md border border-slate-300 px-2 py-1.5 text-sm">
+              <select {...paymentForm.register("method")} className="min-w-0 flex-1 rounded-md border border-slate-300 px-2 py-1.5 text-sm sm:flex-none">
                 <option value="CASH">Cash</option>
                 <option value="CARD">Card</option>
                 <option value="TRANSFER">Transfer</option>
@@ -291,7 +295,7 @@ export function ReservationDetailPage() {
               <button
                 type="submit"
                 disabled={addPaymentMutation.isPending}
-                className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                className="w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50 sm:w-auto sm:py-1.5"
               >
                 Record payment
               </button>
@@ -303,7 +307,7 @@ export function ReservationDetailPage() {
               <button
                 onClick={() => invoiceMutation.mutate()}
                 disabled={invoiceMutation.isPending || balanceDue > 0}
-                className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+                className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50 sm:w-auto"
               >
                 Generate invoice
               </button>

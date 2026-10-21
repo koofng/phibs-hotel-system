@@ -29,8 +29,8 @@ export function DashboardPage() {
               )}
               <ul className="space-y-2">
                 {arrivalsQuery.data.arrivals.map((r) => (
-                  <li key={r.id} className="flex items-center justify-between text-sm">
-                    <Link to={`/reservations/${r.id}`} className="text-slate-700 hover:underline">
+                  <li key={r.id} className="flex items-center justify-between gap-3 text-sm">
+                    <Link to={`/reservations/${r.id}`} className="min-w-0 truncate text-slate-700 hover:underline">
                       {r.guest.fullName} — Room {r.room?.roomNumber ?? "—"}
                     </Link>
                     <StatusBadge status={r.status} />
@@ -47,8 +47,8 @@ export function DashboardPage() {
               )}
               <ul className="space-y-2">
                 {arrivalsQuery.data.departures.map((r) => (
-                  <li key={r.id} className="flex items-center justify-between text-sm">
-                    <Link to={`/reservations/${r.id}`} className="text-slate-700 hover:underline">
+                  <li key={r.id} className="flex items-center justify-between gap-3 text-sm">
+                    <Link to={`/reservations/${r.id}`} className="min-w-0 truncate text-slate-700 hover:underline">
                       {r.guest.fullName} — Room {r.room?.roomNumber ?? "—"}
                     </Link>
                     <StatusBadge status={r.status} />
@@ -67,7 +67,7 @@ export function DashboardPage() {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {occupancyQuery.data.map((room) => (
               <div key={room.id} className="rounded-lg border border-slate-200 bg-white p-3">
-                <div className="mb-1 flex items-center justify-between">
+                <div className="mb-1 flex flex-wrap items-center justify-between gap-1">
                   <span className="font-semibold text-slate-900">{room.roomNumber}</span>
                   <StatusBadge status={room.housekeepingStatus} />
                 </div>

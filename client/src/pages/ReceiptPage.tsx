@@ -27,19 +27,19 @@ export function ReceiptPage() {
         ← Back
       </button>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-6">
         <div className="mb-6 border-b border-slate-200 pb-4 text-center">
           <p className="text-lg font-semibold text-slate-900">{HOTEL.name}</p>
           <p className="text-sm text-slate-500">{HOTEL.address}</p>
           <p className="text-sm text-slate-500">{HOTEL.email}</p>
         </div>
 
-        <div className="mb-6 flex items-start justify-between">
+        <div className="mb-6 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div>
             <h1 className="text-xl font-semibold text-slate-900">Payment receipt</h1>
             <p className="text-sm text-slate-500">{receiptNumber}</p>
           </div>
-          <p className="text-right text-sm text-slate-500">{formatDateTime(payment.paidAt)}</p>
+          <p className="text-sm text-slate-500 sm:text-right">{formatDateTime(payment.paidAt)}</p>
         </div>
 
         <div className="mb-6 rounded-md bg-slate-50 p-4 text-center">
@@ -49,27 +49,27 @@ export function ReceiptPage() {
         </div>
 
         <dl className="mb-6 space-y-2 text-sm">
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Guest</dt>
-            <dd className="text-slate-900">{reservation.guest.fullName}</dd>
+            <dd className="text-right text-slate-900">{reservation.guest.fullName}</dd>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Room type</dt>
-            <dd className="text-slate-900">{reservation.room?.roomType.name ?? "—"}</dd>
+            <dd className="text-right text-slate-900">{reservation.room?.roomType.name ?? "—"}</dd>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Room rate</dt>
-            <dd className="text-slate-900">{formatMoney(reservation.ratePerNight)} / night</dd>
+            <dd className="text-right text-slate-900">{formatMoney(reservation.ratePerNight)} / night</dd>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Stay</dt>
-            <dd className="text-slate-900">
+            <dd className="text-right text-slate-900">
               {formatStayDate(reservation.checkInDate)} – {formatStayDate(reservation.checkOutDate)}
             </dd>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Received by</dt>
-            <dd className="text-slate-900">{payment.receivedBy.fullName}</dd>
+            <dd className="text-right text-slate-900">{payment.receivedBy.fullName}</dd>
           </div>
         </dl>
 
@@ -82,7 +82,7 @@ export function ReceiptPage() {
                   {li.description}
                   {li.quantity > 1 && <span className="text-slate-400"> × {li.quantity}</span>}
                 </td>
-                <td className="py-1.5 text-right text-slate-900">
+                <td className="py-1.5 pl-4 text-right whitespace-nowrap text-slate-900">
                   {li.type === "DISCOUNT" ? "−" : ""}
                   {formatMoney(Number(li.amount) * li.quantity)}
                 </td>
@@ -97,30 +97,30 @@ export function ReceiptPage() {
         </table>
 
         <dl className="space-y-2 text-sm">
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Subtotal</dt>
-            <dd className="text-slate-900">{formatMoney(summary.subtotal)}</dd>
+            <dd className="text-right text-slate-900">{formatMoney(summary.subtotal)}</dd>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Tax</dt>
-            <dd className="text-slate-900">{formatMoney(summary.taxTotal)}</dd>
+            <dd className="text-right text-slate-900">{formatMoney(summary.taxTotal)}</dd>
           </div>
-          <div className="flex justify-between border-t border-slate-200 pt-2 font-semibold">
+          <div className="flex justify-between gap-4 border-t border-slate-200 pt-2 font-semibold">
             <dt className="text-slate-900">Total</dt>
-            <dd className="text-slate-900">{formatMoney(summary.total)}</dd>
+            <dd className="text-right text-slate-900">{formatMoney(summary.total)}</dd>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Paid to date (incl. this payment)</dt>
-            <dd className="text-slate-900">{formatMoney(summary.paidToDate)}</dd>
+            <dd className="text-right text-slate-900">{formatMoney(summary.paidToDate)}</dd>
           </div>
-          <div className="flex justify-between border-t border-slate-200 pt-2 font-semibold">
+          <div className="flex justify-between gap-4 border-t border-slate-200 pt-2 font-semibold">
             <dt className="text-slate-900">Balance remaining</dt>
-            <dd className={balance > 0 ? "text-red-600" : "text-green-600"}>{formatMoney(balance)}</dd>
+            <dd className={`text-right ${balance > 0 ? "text-red-600" : "text-green-600"}`}>{formatMoney(balance)}</dd>
           </div>
         </dl>
 
-        <div className="mt-8 flex items-end justify-between gap-4 border-t border-slate-200 pt-6">
-          <div className="text-xs text-slate-500">
+        <div className="mt-8 flex flex-col-reverse items-center gap-6 border-t sm:flex-row sm:items-end sm:justify-between sm:gap-4 border-slate-200 pt-6">
+          <div className="text-center text-xs text-slate-500 sm:text-left">
             <p className="font-medium uppercase tracking-wide text-slate-700">Digitally signed</p>
             <p>Signed by {payment.receivedBy.fullName}</p>
             <p>For {HOTEL.name}</p>

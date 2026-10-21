@@ -19,8 +19,8 @@ export function InvoicePage() {
         ← Back
       </button>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
-        <div className="mb-6 flex items-start justify-between">
+      <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-6">
+        <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-xl font-semibold text-slate-900">Invoice</h1>
             <p className="text-sm text-slate-500">{invoice.invoiceNumber}</p>
@@ -29,25 +29,25 @@ export function InvoicePage() {
         </div>
 
         <dl className="space-y-2 text-sm">
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Subtotal</dt>
-            <dd className="text-slate-900">{formatMoney(invoice.subtotal)}</dd>
+            <dd className="text-right text-slate-900">{formatMoney(invoice.subtotal)}</dd>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Tax</dt>
-            <dd className="text-slate-900">{formatMoney(invoice.taxTotal)}</dd>
+            <dd className="text-right text-slate-900">{formatMoney(invoice.taxTotal)}</dd>
           </div>
-          <div className="flex justify-between border-t border-slate-200 pt-2 font-semibold">
+          <div className="flex justify-between gap-4 border-t border-slate-200 pt-2 font-semibold">
             <dt className="text-slate-900">Total</dt>
-            <dd className="text-slate-900">{formatMoney(invoice.total)}</dd>
+            <dd className="text-right text-slate-900">{formatMoney(invoice.total)}</dd>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Amount paid</dt>
-            <dd className="text-slate-900">{formatMoney(invoice.amountPaid)}</dd>
+            <dd className="text-right text-slate-900">{formatMoney(invoice.amountPaid)}</dd>
           </div>
-          <div className="flex justify-between border-t border-slate-200 pt-2 font-semibold">
+          <div className="flex justify-between gap-4 border-t border-slate-200 pt-2 font-semibold">
             <dt className="text-slate-900">Balance due</dt>
-            <dd className={Number(invoice.balanceDue) > 0 ? "text-red-600" : "text-green-600"}>
+            <dd className={`text-right ${Number(invoice.balanceDue) > 0 ? "text-red-600" : "text-green-600"}`}>
               {formatMoney(invoice.balanceDue)}
             </dd>
           </div>

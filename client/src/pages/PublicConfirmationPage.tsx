@@ -23,36 +23,36 @@ export function PublicConfirmationPage() {
         <p className="text-sm text-green-700">Save this page or your booking reference for check-in.</p>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-5">
+      <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
         <dl className="space-y-2 text-sm">
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Booking reference</dt>
-            <dd className="font-mono text-xs text-slate-900">{reservation.id}</dd>
+            <dd className="min-w-0 text-right font-mono text-xs break-all text-slate-900">{reservation.id}</dd>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Guest</dt>
-            <dd className="text-slate-900">{reservation.guest.fullName}</dd>
+            <dd className="text-right text-slate-900">{reservation.guest.fullName}</dd>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Room</dt>
-            <dd className="text-slate-900">
+            <dd className="text-right text-slate-900">
               {reservation.room?.roomNumber} · {reservation.room?.roomType.name}
             </dd>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Dates</dt>
-            <dd className="text-slate-900">
+            <dd className="text-right text-slate-900">
               {formatStayDate(reservation.checkInDate)} → {formatStayDate(reservation.checkOutDate)}
             </dd>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Rate</dt>
-            <dd className="text-slate-900">{formatMoney(reservation.ratePerNight)} / night</dd>
+            <dd className="text-right text-slate-900">{formatMoney(reservation.ratePerNight)} / night</dd>
           </div>
           {reservation.preferredPaymentMethod && (
-            <div className="flex justify-between border-t border-slate-200 pt-2">
+            <div className="flex justify-between gap-4 border-t border-slate-200 pt-2">
               <dt className="text-slate-500">Payment</dt>
-              <dd className="text-slate-900">Pay at property — {reservation.preferredPaymentMethod}</dd>
+              <dd className="text-right text-slate-900">Pay at property — {reservation.preferredPaymentMethod}</dd>
             </div>
           )}
         </dl>
