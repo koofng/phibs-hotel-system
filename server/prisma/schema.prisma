@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  FRONT_DESK
+}
+
+enum HousekeepingStatus {
+  CLEAN
+  DIRTY
+  INSPECTED
+  OUT_OF_SERVICE
+}
+
+enum ReservationStatus {
+  BOOKED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+  NO_SHOW
+}
+
+enum ReservationSource {
+  STAFF
+  ONLINE
+}
+
+enum FolioStatus {
+  OPEN
+  CLOSED
+}
+
+enum LineItemType {
+  ROOM_CHARGE
+  SERVICE
+  TAX
+  DISCOUNT
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  role         Role
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  reservationsCreated Reservation[] @relation("ReservationCreatedBy")
+  paymentsReceived    Payment[]     @relation("PaymentReceivedBy")
+  invoicesIssued      Invoice[]     @relation("InvoiceIssuedBy")
+}
+
+model RoomType {
+  id            String   @id @default(uuid())
+  name          String
+  description   String?
+  basePrice     Decimal  @db.Decimal(10, 2)
+  maxOccupancy  Int
+  amenities     String[]
+  createdAt     DateTime @default(now())
+
+  rooms Room[]
+}
+
+model Room {
+  id                  String             @id @default(uuid())
+  roomNumber          String             @unique
+  roomTypeId          String
+  roomType            RoomType           @relation(fields: [roomTypeId], references: [id])
+  floor               Int
+  housekeepingStatus  HousekeepingStatus @default(CLEAN)
+  isActive            Boolean            @default(true)
+  createdAt           DateTime           @default(now())
+
+  reservations Reservation[]
+
+  @@index([roomTypeId])
+}
+
+model Guest {
+  id                String   @id @default(uuid())
+  fullName          String
+  email             String?
+  phone             String?
+  idDocumentNumber  String?
+  address           String?
+  notes             String?
+  createdAt         DateTime @default(now())
+
+  reservations Reservation[]
+}
+
+model Reservation {
+  id                     String             @id @default(uuid())
+  guestId                String
+  guest                  Guest              @relation(fields: [guestId], references: [id])
+  roomId                 String?
+  room                   Room?              @relation(fields: [roomId], references: [id])
+  checkInDate            DateTime
+  checkOutDate           DateTime
+  status                 ReservationStatus  @default(BOOKED)
+  numGuests              Int                @default(1)
+  ratePerNight           Decimal            @db.Decimal(10, 2)
+  source                 ReservationSource  @default(STAFF)
+  preferredPaymentMethod PaymentMethod?
+  createdById            String?
+  createdBy              User?              @relation("ReservationCreatedBy", fields: [createdById], references: [id])
+  createdAt              DateTime           @default(now())
+
+  folio Folio?
+
+  @@index([roomId])
+  @@index([guestId])
+  @@index([checkInDate, checkOutDate])
+}
+
+model Folio {
+  id             String       @id @default(uuid())
+  reservationId  String       @unique
+  reservation    Reservation  @relation(fields: [reservationId], references: [id])
+  status         FolioStatus  @default(OPEN)
+  createdAt      DateTime     @default(now())
+
+  lineItems FolioLineItem[]
+  payments  Payment[]
+  invoice   Invoice?
+}
+
+model FolioLineItem {
+  id          String       @id @default(uuid())
+  folioId     String
+  folio       Folio        @relation(fields: [folioId], references: [id])
+  type        LineItemType
+  description String
+  amount      Decimal      @db.Decimal(10, 2)
+  quantity    Int          @default(1)
+  createdAt   DateTime     @default(now())
+
+  @@index([folioId])
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  folioId         String
+  folio           Folio         @relation(fields: [folioId], references: [id])
+  amount          Decimal       @db.Decimal(10, 2)
+  method          PaymentMethod
+  paidAt          DateTime      @default(now())
+  receivedById    String
+  receivedBy      User          @relation("PaymentReceivedBy", fields: [receivedById], references: [id])
+
+  @@index([folioId])
+}
+
+model Invoice {
+  id             String   @id @default(uuid())
+  folioId        String   @unique
+  folio          Folio    @relation(fields: [folioId], references: [id])
+  invoiceNumber  String   @unique
+  subtotal       Decimal  @db.Decimal(10, 2)
+  taxTotal       Decimal  @db.Decimal(10, 2)
+  total          Decimal  @db.Decimal(10, 2)
+  amountPaid     Decimal  @db.Decimal(10, 2)
+  balanceDue     Decimal  @db.Decimal(10, 2)
+  issuedAt       DateTime @default(now())
+  issuedById     String
+  issuedBy       User     @relation("InvoiceIssuedBy", fields: [issuedById], references: [id])
+}

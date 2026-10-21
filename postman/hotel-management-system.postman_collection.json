@@ -1,0 +1,753 @@
+{
+  "info": {
+    "name": "Hotel Management System API",
+    "description": "REST API for the Hotel Management System (auth, rooms, reservations, guests, billing, admin payments report, dashboard, and a public no-auth guest booking flow). Staff auth uses an httpOnly session cookie set on login — Postman's cookie jar handles it automatically for requests against {{baseUrl}}'s host, no manual token needed. The 'Public Booking' folder needs no login at all.\n\nQuick start:\n1. Run 'Auth > Login (Admin)' (or Login (Front Desk)).\n2. Run requests under Room Types / Rooms / Guests to create data, or rely on the seeded demo data.\n3. Many 'create' requests auto-save their returned id into collection variables (e.g. {{roomId}}, {{guestId}}, {{reservationId}}, {{folioId}}, {{publicRoomId}}, {{publicReservationId}}) via a test script, so later requests in the folder chain together.\n4. 'Billing > List all payments (Admin)' gives a consolidated view of every payment with the services/charges it covered.\n5. 'Public Booking' requests need no login — a guest checks availability and books with just name/email/phone, no staff involvement.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000/api/v1" },
+    { "key": "userId", "value": "" },
+    { "key": "roomTypeId", "value": "" },
+    { "key": "roomId", "value": "" },
+    { "key": "guestId", "value": "" },
+    { "key": "reservationId", "value": "" },
+    { "key": "folioId", "value": "" },
+    { "key": "lineItemId", "value": "" },
+    { "key": "invoiceId", "value": "" },
+    { "key": "publicRoomId", "value": "" },
+    { "key": "publicReservationId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@hotel.local\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "description": "Seeded admin account. Sets an httpOnly session cookie."
+          }
+        },
+        {
+          "name": "Login (Front Desk)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"frontdesk@hotel.local\",\n  \"password\": \"staff123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "description": "Seeded front-desk (non-admin) account."
+          }
+        },
+        {
+          "name": "Get current user (me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users (Admin)",
+      "item": [
+        {
+          "name": "List users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Create user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const body = pm.response.json();",
+                  "  pm.collectionVariables.set('userId', body.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"new.staff@hotel.local\",\n  \"password\": \"password123\",\n  \"fullName\": \"New Staff\",\n  \"role\": \"FRONT_DESK\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Update user",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": true,\n  \"role\": \"FRONT_DESK\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Deactivate user",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Room Types",
+      "item": [
+        {
+          "name": "List room types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/room-types", "host": ["{{baseUrl}}"], "path": ["room-types"] }
+          }
+        },
+        {
+          "name": "Create room type (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const body = pm.response.json();",
+                  "  pm.collectionVariables.set('roomTypeId', body.roomType.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Executive Suite\",\n  \"description\": \"Top-floor suite with a city view\",\n  \"basePrice\": 249,\n  \"maxOccupancy\": 4,\n  \"amenities\": [\"wifi\", \"tv\", \"minibar\", \"balcony\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/room-types", "host": ["{{baseUrl}}"], "path": ["room-types"] }
+          }
+        },
+        {
+          "name": "Update room type (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"basePrice\": 259\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/room-types/{{roomTypeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["room-types", "{{roomTypeId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete room type (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/room-types/{{roomTypeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["room-types", "{{roomTypeId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rooms",
+      "item": [
+        {
+          "name": "List rooms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rooms?housekeepingStatus=&roomTypeId=",
+              "host": ["{{baseUrl}}"],
+              "path": ["rooms"],
+              "query": [
+                { "key": "housekeepingStatus", "value": "", "description": "CLEAN | DIRTY | INSPECTED | OUT_OF_SERVICE" },
+                { "key": "roomTypeId", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rooms/availability?checkIn=2027-01-10&checkOut=2027-01-13&roomTypeId=",
+              "host": ["{{baseUrl}}"],
+              "path": ["rooms", "availability"],
+              "query": [
+                { "key": "checkIn", "value": "2027-01-10" },
+                { "key": "checkOut", "value": "2027-01-13" },
+                { "key": "roomTypeId", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create room (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const body = pm.response.json();",
+                  "  pm.collectionVariables.set('roomId', body.room.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomNumber\": \"401\",\n  \"roomTypeId\": \"{{roomTypeId}}\",\n  \"floor\": 4\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/rooms", "host": ["{{baseUrl}}"], "path": ["rooms"] }
+          }
+        },
+        {
+          "name": "Update room (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"floor\": 4,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rooms/{{roomId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["rooms", "{{roomId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update housekeeping status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"housekeepingStatus\": \"CLEAN\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rooms/{{roomId}}/housekeeping-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["rooms", "{{roomId}}", "housekeeping-status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Guests",
+      "item": [
+        {
+          "name": "List / search guests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/guests?search=",
+              "host": ["{{baseUrl}}"],
+              "path": ["guests"],
+              "query": [{ "key": "search", "value": "", "description": "matches fullName, email, or phone" }]
+            }
+          }
+        },
+        {
+          "name": "Get guest by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/guests/{{guestId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["guests", "{{guestId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create guest",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const body = pm.response.json();",
+                  "  pm.collectionVariables.set('guestId', body.guest.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Jamie Traveler\",\n  \"email\": \"jamie@example.com\",\n  \"phone\": \"555-0199\",\n  \"idDocumentNumber\": \"P1234567\",\n  \"address\": \"123 Main St\",\n  \"notes\": \"Prefers a high floor\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/guests", "host": ["{{baseUrl}}"], "path": ["guests"] }
+          }
+        },
+        {
+          "name": "Update guest",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"555-0200\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/guests/{{guestId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["guests", "{{guestId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reservations",
+      "item": [
+        {
+          "name": "List reservations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reservations?status=&guestId=&fromDate=&toDate=",
+              "host": ["{{baseUrl}}"],
+              "path": ["reservations"],
+              "query": [
+                { "key": "status", "value": "", "description": "BOOKED | CHECKED_IN | CHECKED_OUT | CANCELLED | NO_SHOW" },
+                { "key": "guestId", "value": "" },
+                { "key": "fromDate", "value": "" },
+                { "key": "toDate", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get reservation by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reservations/{{reservationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["reservations", "{{reservationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create reservation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const body = pm.response.json();",
+                  "  pm.collectionVariables.set('reservationId', body.reservation.id);",
+                  "  pm.collectionVariables.set('folioId', body.reservation.folio.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"guestId\": \"{{guestId}}\",\n  \"roomId\": \"{{roomId}}\",\n  \"checkInDate\": \"2027-01-10\",\n  \"checkOutDate\": \"2027-01-13\",\n  \"numGuests\": 2\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/reservations", "host": ["{{baseUrl}}"], "path": ["reservations"] },
+            "description": "Requires {{guestId}} and {{roomId}} to be set (run the 'Create guest' and 'Create room' or 'Search availability' requests first). Auto-creates an OPEN folio with a room-charge line item."
+          }
+        },
+        {
+          "name": "Update reservation",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"checkOutDate\": \"2027-01-14\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reservations/{{reservationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["reservations", "{{reservationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Cancel reservation",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reservations/{{reservationId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["reservations", "{{reservationId}}", "cancel"]
+            }
+          }
+        },
+        {
+          "name": "Check in",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reservations/{{reservationId}}/check-in",
+              "host": ["{{baseUrl}}"],
+              "path": ["reservations", "{{reservationId}}", "check-in"]
+            },
+            "description": "Optional body: { \"roomId\": \"...\" } to assign/change the room at check-in."
+          }
+        },
+        {
+          "name": "Check out",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reservations/{{reservationId}}/check-out",
+              "host": ["{{baseUrl}}"],
+              "path": ["reservations", "{{reservationId}}", "check-out"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Billing",
+      "item": [
+        {
+          "name": "List all payments (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/payments?dateFrom=&dateTo=&method=&guestId=",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "payments"],
+              "query": [
+                { "key": "dateFrom", "value": "", "description": "ISO date string" },
+                { "key": "dateTo", "value": "", "description": "ISO date string" },
+                { "key": "method", "value": "", "description": "CASH | CARD | TRANSFER" },
+                { "key": "guestId", "value": "" }
+              ]
+            },
+            "description": "Admin-only. Every payment across all bookings, with the linked reservation/guest/room and the folio's line items (room charges + services like ironing, laundry, food & drinks, room service) so you can see what each payment was for."
+          }
+        },
+        {
+          "name": "Get folio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/folios/{{folioId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "folios", "{{folioId}}"]
+            }
+          }
+        },
+        {
+          "name": "Add line item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const body = pm.response.json();",
+                  "  const items = body.folio.lineItems;",
+                  "  if (items && items.length) {",
+                  "    pm.collectionVariables.set('lineItemId', items[items.length - 1].id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"SERVICE\",\n  \"description\": \"Minibar\",\n  \"amount\": 15,\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/billing/folios/{{folioId}}/line-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "folios", "{{folioId}}", "line-items"]
+            },
+            "description": "type: ROOM_CHARGE | SERVICE | TAX | DISCOUNT"
+          }
+        },
+        {
+          "name": "Remove line item",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/folios/{{folioId}}/line-items/{{lineItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "folios", "{{folioId}}", "line-items", "{{lineItemId}}"]
+            }
+          }
+        },
+        {
+          "name": "Add payment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100,\n  \"method\": \"CARD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/billing/folios/{{folioId}}/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "folios", "{{folioId}}", "payments"]
+            },
+            "description": "method: CASH | CARD | TRANSFER"
+          }
+        },
+        {
+          "name": "Generate invoice",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.folio.invoice) {",
+                  "    pm.collectionVariables.set('invoiceId', body.folio.invoice.id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/folios/{{folioId}}/invoice",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "folios", "{{folioId}}", "invoice"]
+            },
+            "description": "Closes the folio and computes subtotal/tax/total/balanceDue."
+          }
+        },
+        {
+          "name": "Get invoice",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/{{invoiceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "invoices", "{{invoiceId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Occupancy grid",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/occupancy?date=",
+              "host": ["{{baseUrl}}"],
+              "path": ["dashboard", "occupancy"],
+              "query": [{ "key": "date", "value": "", "description": "defaults to today; ISO date string" }]
+            }
+          }
+        },
+        {
+          "name": "Arrivals & departures",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/arrivals-departures?date=",
+              "host": ["{{baseUrl}}"],
+              "path": ["dashboard", "arrivals-departures"],
+              "query": [{ "key": "date", "value": "", "description": "defaults to today; ISO date string" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Booking (no auth)",
+      "item": [
+        {
+          "name": "List room types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/public/room-types", "host": ["{{baseUrl}}"], "path": ["public", "room-types"] },
+            "description": "No authentication required — the guest-facing browse endpoint."
+          }
+        },
+        {
+          "name": "Search availability",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.rooms && body.rooms.length) {",
+                  "    pm.collectionVariables.set('publicRoomId', body.rooms[0].id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/public/rooms/availability?checkIn=2027-01-10&checkOut=2027-01-13",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "rooms", "availability"],
+              "query": [
+                { "key": "checkIn", "value": "2027-01-10" },
+                { "key": "checkOut", "value": "2027-01-13" }
+              ]
+            },
+            "description": "No authentication required. Saves the first available room's id into {{publicRoomId}}."
+          }
+        },
+        {
+          "name": "Create reservation (guest checkout)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const body = pm.response.json();",
+                  "  pm.collectionVariables.set('publicReservationId', body.reservation.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Jordan Public\",\n  \"email\": \"jordan.public@example.com\",\n  \"phone\": \"555-0777\",\n  \"roomId\": \"{{publicRoomId}}\",\n  \"checkInDate\": \"2027-01-10\",\n  \"checkOutDate\": \"2027-01-13\",\n  \"numGuests\": 2,\n  \"preferredPaymentMethod\": \"CASH\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/public/reservations", "host": ["{{baseUrl}}"], "path": ["public", "reservations"] },
+            "description": "No authentication required — no guest account, just checkout details. Finds or creates the guest by email, books instantly (BOOKED status, same overlap protection as staff bookings), and auto-creates an OPEN folio. Rate-limited to 10 requests / 15 min per IP. Requires {{publicRoomId}} to be set (run 'Search availability' first)."
+          }
+        },
+        {
+          "name": "Get booking confirmation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/public/reservations/{{publicReservationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "reservations", "{{publicReservationId}}"]
+            },
+            "description": "No authentication required — the reservation's UUID itself acts as the guest's booking reference/lookup token."
+          }
+        }
+      ]
+    }
+  ]
+}
