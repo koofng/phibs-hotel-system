@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { requireAuth } from "../../middleware/auth.js";
+import { requireAuth, requireRole } from "../../middleware/auth.js";
 import * as reservationsService from "./reservations.service.js";
 
 export const reservationsRouter = Router();
@@ -80,6 +80,15 @@ reservationsRouter.patch("/:id", async (req, res, next) => {
   try {
     const input = updateReservationSchema.parse(req.body);
     res.json({ reservation: await reservationsService.updateReservation(req.params.id, input) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+reservationsRouter.delete("/:id", requireRole("ADMIN"), async (req, res, next) => {
+  try {
+    await reservationsService.deleteReservation(req.params.id);
+    res.status(204).end();
   } catch (err) {
     next(err);
   }

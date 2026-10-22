@@ -170,6 +170,28 @@ export async function cancelReservation(id: string) {
   return prisma.reservation.update({ where: { id }, data: { status: "CANCELLED" }, include });
 }
 
+// Permanently removes a reservation along with its folio and everything billed
+// against it (line items, payments, invoice).
+export async function deleteReservation(id: string) {
+  const existing = await prisma.reservation.findUnique({ where: { id }, include: { folio: true } });
+  if (!existing) {
+    throw ApiError.notFound("Reservation not found");
+  }
+
+  const folioId = existing.folio?.id;
+  await prisma.$transaction([
+    ...(folioId
+      ? [
+          prisma.payment.deleteMany({ where: { folioId } }),
+          prisma.invoice.deleteMany({ where: { folioId } }),
+          prisma.folioLineItem.deleteMany({ where: { folioId } }),
+          prisma.folio.delete({ where: { id: folioId } }),
+        ]
+      : []),
+    prisma.reservation.delete({ where: { id } }),
+  ]);
+}
+
 export async function checkIn(id: string, roomId?: string) {
   const existing = await prisma.reservation.findUnique({ where: { id } });
   if (!existing) {

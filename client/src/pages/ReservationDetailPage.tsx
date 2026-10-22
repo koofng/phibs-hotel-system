@@ -6,7 +6,14 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 import { addLineItem, addPayment, generateInvoice, getFolio } from "../api/billing";
 import { getErrorMessage } from "../api/client";
-import { cancelReservation, checkInReservation, checkOutReservation, getReservation } from "../api/reservations";
+import {
+  cancelReservation,
+  checkInReservation,
+  checkOutReservation,
+  deleteReservation,
+  getReservation,
+} from "../api/reservations";
+import { useAuth } from "../auth/AuthContext";
 import { StatusBadge } from "../components/StatusBadge";
 import { formatDate, formatMoney, formatStayDate } from "../lib/format";
 
@@ -27,6 +34,8 @@ export function ReservationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
   const [error, setError] = useState<string | null>(null);
 
   const reservationQuery = useQuery({
@@ -74,6 +83,28 @@ export function ReservationDetailPage() {
     onSuccess: invalidateAll,
     onError: (err) => setError(getErrorMessage(err)),
   });
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteReservation(id!),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ["reservation", id] });
+      queryClient.removeQueries({ queryKey: ["folio", folioId] });
+      queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["occupancy"] });
+      navigate("/reservations");
+    },
+    onError: (err) => setError(getErrorMessage(err)),
+  });
+
+  function handleDelete() {
+    const paymentCount = folioQuery.data?.payments.length ?? 0;
+    const warning =
+      paymentCount > 0
+        ? `This will permanently delete the reservation and its ${paymentCount} payment${paymentCount === 1 ? "" : "s"}. This cannot be undone.`
+        : "This will permanently delete the reservation. This cannot be undone.";
+    if (window.confirm(warning)) deleteMutation.mutate();
+  }
 
   const addLineItemMutation = useMutation({
     mutationFn: (values: LineItemForm) => addLineItem(folioId!, values),
@@ -158,6 +189,15 @@ export function ReservationDetailPage() {
               className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
             >
               Check out
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+              className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 sm:ml-auto"
+            >
+              Delete reservation
             </button>
           )}
         </div>

@@ -161,6 +161,41 @@ describe("reservations", () => {
     expect(guests.body.guests).toHaveLength(0);
   });
 
+  it("deletes a reservation along with its payments and invoice", async () => {
+    const { agent, room, guest } = await setup();
+
+    const res = await agent
+      .post("/api/v1/reservations")
+      .send({ guestId: guest.id, roomId: room.id, checkInDate: "2027-07-01", checkOutDate: "2027-07-03" })
+      .expect(201);
+    const id = res.body.reservation.id;
+    const folioId = res.body.reservation.folio.id;
+
+    await agent
+      .post(`/api/v1/billing/folios/${folioId}/payments`)
+      .send({ amount: 200, method: "CASH" })
+      .expect(201);
+    await agent.post(`/api/v1/billing/folios/${folioId}/invoice`).expect(201);
+
+    await agent.delete(`/api/v1/reservations/${id}`).expect(204);
+
+    await agent.get(`/api/v1/reservations/${id}`).expect(404);
+    const payments = await agent.get("/api/v1/billing/payments").expect(200);
+    expect(payments.body.payments).toHaveLength(0);
+  });
+
+  it("only lets admins delete reservations", async () => {
+    const { agent, room, guest } = await setup();
+    const res = await agent
+      .post("/api/v1/reservations")
+      .send({ guestId: guest.id, roomId: room.id, checkInDate: "2027-08-01", checkOutDate: "2027-08-03" })
+      .expect(201);
+
+    const frontDesk = await createUser({ email: "desk@test.local", role: "FRONT_DESK" });
+    const deskAgent = await loginAgent(frontDesk.email);
+    await deskAgent.delete(`/api/v1/reservations/${res.body.reservation.id}`).expect(403);
+  });
+
   it("requires either an existing guest or new guest details", async () => {
     const { agent, room } = await setup();
     await agent

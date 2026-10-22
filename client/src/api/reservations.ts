@@ -43,6 +43,10 @@ export async function cancelReservation(id: string): Promise<Reservation> {
   return res.data.reservation;
 }
 
+export async function deleteReservation(id: string): Promise<void> {
+  await apiClient.delete(`/reservations/${id}`);
+}
+
 export async function checkInReservation(id: string, roomId?: string): Promise<Reservation> {
   const res = await apiClient.post(`/reservations/${id}/check-in`, roomId ? { roomId } : {});
   return res.data.reservation;
